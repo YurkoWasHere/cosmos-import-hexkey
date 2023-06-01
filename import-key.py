@@ -46,8 +46,8 @@ def base64_custom_encode(data):
 blockTypePrivKey = "TENDERMINT PRIVATE KEY"
 password=os.urandom(16).hex().upper()
 
-if len(sys.argv)<4:
-    print(f"usage: {sys.argv[0]} HEX_PRIVATE_KEY KEY_NAME COMOS_BINARY")
+if len(sys.argv)<3:
+    print(f"usage: {sys.argv[0]} <private-key in hex format> <name of key> [cosmos_binary]")
     exit(-1)
 
 private_key=sys.argv[1]
@@ -56,7 +56,9 @@ if len(private_key)!=64:
     exit(-1)
     
 keyname = sys.argv[2]
-cosmos_binary = sys.argv[3]
+cosmos_binary=""
+if len(sys.argv)==4:
+    cosmos_binary = sys.argv[3]
 
 # Prefix bytes for private kyes is 0xE1B0F79B20
 private_key = "E1B0F79B20" + private_key 
@@ -91,28 +93,16 @@ if len(text)>64:
 out = out + text
 out=out + "=" + base64.b64encode(calculate_crc24(encrypted_private_key)).decode('utf-8') + "\n"  
 out=out + "-----END TENDERMINT PRIVATE KEY-----\n"  
-file_path = f"{os.getcwd()}\\{keyname}.pem"
+file_path = f"{os.getcwd()}/{keyname}.pem"
 file = open(file_path, "w")
 file.write(out)
 file.close
 
-pass_path = f"{os.getcwd()}\\{keyname}.pwd"
+pass_path = f"{os.getcwd()}/{keyname}.pwd"
 file = open(pass_path, "w")
 file.write(password)
 file.close
 
-print(f"Run: {cosmos_binary} keys import {keyname} {file_path} < {pass_path}")
+if cosmos_binary:
+    print(f"Run: {cosmos_binary} keys import {keyname} {file_path} < {pass_path}")
 
-'''
-Not working automatically call the binary
-print(file_path)
-command  = f"{cosmos_binary} keys import {keyname} {file_path} < {pass_path}"
-print(command)
-result = subprocess.run(command, shell=True, capture_output=True, text=True)
-
-print("Standard Output:")
-print(result.stdout)
-
-print("Standard Error:")
-print(result.stderr)
-'''
